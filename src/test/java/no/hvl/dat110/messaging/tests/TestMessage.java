@@ -33,9 +33,9 @@ class TestMessage {
 		
 		byte[] encoded = MessageUtils.encapsulate(message);
 		
-		assertEquals(size,encoded[0]);
+		assertEquals(size, encoded[0]);
 		
-		assertEquals(MessageUtils.SEGMENTSIZE,encoded.length);
+		assertEquals(MessageUtils.SEGMENTSIZE, encoded.length);
 		
 		for (int i = 0; i<data.length;i++) {
 			assertEquals(data[i],encoded[i+1]);
@@ -79,6 +79,8 @@ class TestMessage {
 			Message message2 = MessageUtils.decapsulate(encoded);
 			
 			byte[] decoded = message2.getData();
+
+            System.out.printf("encode/decode: \n- %s, \n- %s\n", Arrays.toString(data), Arrays.toString(decoded));
 			
 			assertTrue(Arrays.equals(data, decoded));
 		}

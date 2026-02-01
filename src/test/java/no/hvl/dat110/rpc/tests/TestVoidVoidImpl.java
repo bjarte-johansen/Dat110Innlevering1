@@ -3,6 +3,9 @@ package no.hvl.dat110.rpc.tests;
 import no.hvl.dat110.rpc.RPCRemoteImpl;
 import no.hvl.dat110.rpc.RPCUtils;
 import no.hvl.dat110.rpc.RPCServer;
+import utils.Debug;
+
+import java.util.Arrays;
 
 public class TestVoidVoidImpl extends RPCRemoteImpl {
 
@@ -15,7 +18,7 @@ public class TestVoidVoidImpl extends RPCRemoteImpl {
 	}
 	
 	public byte[] invoke(byte[] request) {
-		
+        Debug.printf("invoke TestVoidVoidImpl (%s)\n", Arrays.toString(request));
 		RPCUtils.unmarshallVoid(request);
 		
 		m();

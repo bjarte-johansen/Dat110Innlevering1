@@ -3,6 +3,10 @@ package no.hvl.dat110.rpc;
 import no.hvl.dat110.TODO;
 import no.hvl.dat110.messaging.*;
 
+import java.util.Arrays;
+
+import utils.Debug;
+
 public class RPCClient {
 
 	// underlying messaging client used for RPC communication
@@ -12,30 +16,17 @@ public class RPCClient {
 	private MessageConnection connection;
 	
 	public RPCClient(String server, int port) {
-	
 		msgclient = new MessagingClient(server,port);
 	}
 	
 	public void connect() {
-		
-		// TODO - START
-		// connect using the RPC client
-		
-		if (true)
-			throw new UnsupportedOperationException(TODO.method());
-		
-		// TODO - END
+        // connect by creating the underlying messaging connection
+        connection = msgclient.connect();
 	}
 	
 	public void disconnect() {
-		
-		// TODO - START
 		// disconnect by closing the underlying messaging connection
-		
-		if (true)
-			throw new UnsupportedOperationException(TODO.method());
-		
-		// TODO - END
+		connection.close();
 	}
 
 	/*
@@ -46,25 +37,36 @@ public class RPCClient {
 	 */
 
 	public byte[] call(byte rpcid, byte[] param) {
-		
-		byte[] returnval = null;
-		
-		// TODO - START
+        Debug.printf("# rpclient/call started");
+        Debug.indent(1);
 
-		/*
+        // encapsulate the rpcid and param in an RPC message
+        byte[] rpcMessage = RPCUtils.encapsulate(rpcid, param);
 
-		The rpcid and param must be encapsulated according to the RPC message format
+        Debug.println();
+        Debug.printf("%s (is \"%s\")\n", Arrays.toString(rpcMessage), RPCCommon.getIdAsString(rpcid));
 
-		The return value from the RPC call must be decapsulated according to the RPC message format
+        connection.send(new Message(rpcMessage));
 
-		*/
-				
-		if (true)
-			throw new UnsupportedOperationException(TODO.method());
-		
-		// TODO - END
-		return returnval;
-		
+        // block & wait for a reply
+        Debug.println("- waiting for reply");
+        Message reply = connection.receive();
+        Debug.println("- received reply");
+
+        // dont allow this ..
+        if(reply.getData().length == 0) {
+            throw new IllegalStateException("RPC CALL reply.getData().length was zero");
+        }
+
+        Debug.indent();
+        Debug.printf("data: %s, len: %d\n", Arrays.toString(reply.getData()), reply.getData().length);
+        Debug.printf("decapsulated: " + Arrays.toString(RPCUtils.decapsulate(reply.getData())) + "\n");
+        Debug.unindent();
+
+        Debug.indent(-1);
+        Debug.printf("# rpcclient/call end");
+
+        return RPCUtils.decapsulate(reply.getData());
 	}
 
 }

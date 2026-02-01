@@ -22,6 +22,7 @@ public class TestRPC {
 	@Test
 	@Order(1)
 	public void testStartStop() {
+        System.out.println("----- TEST START STOP -----");
 
 		AtomicBoolean failure = new AtomicBoolean(false);
 
@@ -90,6 +91,7 @@ public class TestRPC {
 	@Test
 	@Order(2)
 	public void testVoidCall() {
+        System.out.println("----- TEST VOID CALL -----");
 
 		RPCClient client = new RPCClient(SERVER, PORT);
 		RPCServer server = new RPCServer(PORT);
