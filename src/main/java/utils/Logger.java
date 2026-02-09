@@ -4,6 +4,11 @@ import no.hvl.dat110.rpc.RPCCommon;
 
 import java.util.HashMap;
 
+/*
+    * Logger utility class for debugging and logging messages.
+    * NOTES: Set DEBUG = true for more messagess
+ */
+
 public class Logger {
     public static final boolean DEBUG = false;
     public static final HashMap<String, Integer> DEBUG_WHO_MAP = new HashMap<>();
