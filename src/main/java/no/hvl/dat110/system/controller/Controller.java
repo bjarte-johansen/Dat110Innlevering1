@@ -15,27 +15,28 @@ public class Controller  {
     static volatile boolean running = true;
 	
 	private static int N = 5;
+    private static int UPDATE_INTERVAL_MS = 1000;
+
 	
 	public static void main (String[] args) throws Exception{
-
-        //System.setOut(new IndentedOut(System.out));
-
 		DisplayStub display;
 		SensorStub sensor;
 		
-		RPCClient displayclient,sensorclient;
+		RPCClient displayClient;
+        RPCClient sensorClient;
 		
 		System.out.println("Controller starting ...");
 				
 		// create RPC clients for the system
-		displayclient = new RPCClient(Common.DISPLAYHOST,Common.DISPLAYPORT);
-		sensorclient = new RPCClient(Common.SENSORHOST,Common.SENSORPORT);
-        sensorclient.connect();
-        displayclient.connect();
+        displayClient = new RPCClient(Common.DISPLAYHOST, Common.DISPLAYPORT);
+		sensorClient = new RPCClient(Common.SENSORHOST, Common.SENSORPORT);
+
+        sensorClient.connect();
+        displayClient.connect();
 		
 		// setup stop methods in the RPC middleware
-		RPCClientStopStub stopdisplay = new RPCClientStopStub(displayclient);
-		RPCClientStopStub stopsensor = new RPCClientStopStub(sensorclient);
+		RPCClientStopStub stopdisplay = new RPCClientStopStub(displayClient);
+		RPCClientStopStub stopsensor = new RPCClientStopStub(sensorClient);
 				
 		// TODO - START
 		
@@ -43,25 +44,25 @@ public class Controller  {
 		// connect to sensor and display RPC servers - using the RPCClients
 		// read value from sensor using RPC and write to display using RPC
 
-        SensorStub sensorImpl = new SensorStub(sensorclient);
-        DisplayStub displayImpl = new DisplayStub(displayclient);
+        SensorStub sensorImpl = new SensorStub(sensorClient);
+        DisplayStub displayImpl = new DisplayStub(displayClient);
 
-
-        int UPDATE_INTERVAL_MS = 1000;
-
-
+        for(int i = 0; i < N; i++) {
+            int temp = sensorImpl.read();
+            displayImpl.write(String.valueOf(temp));
+            Thread.sleep(UPDATE_INTERVAL_MS);
+        }
+/*
         // read from sensor and write to display
         int temp = sensorImpl.read();
         displayImpl.write(String.valueOf(temp));
+*/
 
-
-		// TODO - END
-		
 		stopdisplay.stop();
 		stopsensor.stop();
-	
-		displayclient.disconnect();
-		sensorclient.disconnect();
+
+        displayClient.disconnect();
+        sensorClient.disconnect();
 		
 		System.out.println("Controller stopping ...");
 		
