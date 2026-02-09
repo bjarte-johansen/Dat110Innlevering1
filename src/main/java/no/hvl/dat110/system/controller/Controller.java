@@ -7,13 +7,16 @@ import no.hvl.dat110.rpc.RPCClientStopStub;
 import no.hvl.dat110.rpc.RPCCommon;
 import no.hvl.dat110.system.display.DisplayDevice;
 import no.hvl.dat110.system.sensor.SensorImpl;
-import utils.IndentedOut;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class Controller  {
+    static volatile boolean running = true;
 	
 	private static int N = 5;
 	
-	public static void main (String[] args) {
+	public static void main (String[] args) throws Exception{
 
         //System.setOut(new IndentedOut(System.out));
 
@@ -45,7 +48,26 @@ public class Controller  {
 
         int temperature = sensorImpl.read();
 
-        displayImpl.write( String.valueOf(temperature) );
+        int UPDATE_INTERVAL_MS = 1000;
+
+
+
+        Thread worker = new Thread(() -> {
+            while (N-- > 0) {
+                try {
+                    // read from sensor and write to display
+                    int temp = sensorImpl.read();
+                    displayImpl.write(String.valueOf(temp));
+
+                    Thread.sleep(UPDATE_INTERVAL_MS);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        });
+
+        worker.start();
+        worker.join();
 
 		// TODO - END
 		
