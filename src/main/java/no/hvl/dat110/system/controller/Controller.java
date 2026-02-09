@@ -46,28 +46,14 @@ public class Controller  {
         SensorStub sensorImpl = new SensorStub(sensorclient);
         DisplayStub displayImpl = new DisplayStub(displayclient);
 
-        int temperature = sensorImpl.read();
 
         int UPDATE_INTERVAL_MS = 1000;
 
 
+        // read from sensor and write to display
+        int temp = sensorImpl.read();
+        displayImpl.write(String.valueOf(temp));
 
-        Thread worker = new Thread(() -> {
-            while (N-- > 0) {
-                try {
-                    // read from sensor and write to display
-                    int temp = sensorImpl.read();
-                    displayImpl.write(String.valueOf(temp));
-
-                    Thread.sleep(UPDATE_INTERVAL_MS);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        });
-
-        worker.start();
-        worker.join();
 
 		// TODO - END
 		
