@@ -12,6 +12,7 @@ import utils.Debug;
 
 
 public class MessageConnection {
+    public boolean quiet = true;
 
 	private DataOutputStream outStream; // for writing bytes to the underlying TCP connection
 	private DataInputStream inStream; // for reading bytes from the underlying TCP connection
@@ -37,8 +38,7 @@ public class MessageConnection {
 	}
 
 	public void send(Message message) {
-        Debug.printf("MessageConnection/send{\n");
-        Debug.indent();
+        if(!quiet) Debug.beginBlock("MessageConnection/send");
 
         try {
             // encapsulate data into a segment and write to the output stream
@@ -48,7 +48,7 @@ public class MessageConnection {
             if(n > 255)
                 throw new IOException("Message too long");
 
-            Debug.printf("MessageConnection/sending data: %s, len: %d\n", Arrays.toString(data), data.length);
+            if(!quiet) Debug.println(SegmentUtils.payloadToString(data));
 
             // check for message length exceeding 255 bytes
             outStream.writeByte(n);
@@ -58,44 +58,35 @@ public class MessageConnection {
             ex.printStackTrace();
         }
 
-        Debug.unindent();
-        Debug.println("}");
-		
-		//throw new UnsupportedOperationException(TODO.method());
+        if(!quiet) Debug.endBlock();
 	}
 
 	public Message receive() {
-        Debug.printf("MessageConnection/receive{\n");
-        Debug.indent();
+        if(!quiet) Debug.beginBlock("MessageConnection::receive");
+        byte[] data = null;
 
 		// read a segment from the input stream and decapsulate data into a Message
         try {
-            Debug.println("- Read length byte ...");
-
+            if(!quiet) Debug.println("- Read segment length status");
             int n = inStream.readUnsignedByte(); // ← length byte
-            Debug.println("- Read length: " + n);
 
-            Debug.printf("- Attempt read %d bytes\n", n);
+            if(!quiet) Debug.printf("- Try read payload (%d bytes)\n", n);
 
-            byte[] data = new byte[n];
+            data = new byte[n];
             inStream.readFully(data);
 
-            Debug.printf("- (#info payload: %s)\n", Arrays.toString(data));
-
-            Debug.unindent();
-            Debug.printf("}\n");
-            // create message
-            return new Message(data);
+            if(!quiet) Debug.printf("- OK: %s\n", SegmentUtils.payloadToString(data));
         }catch (IOException ex) {
             Debug.println("Connection: " + ex.getMessage());
             ex.printStackTrace();
+
+            data = new byte[0];
         }
 
-        Debug.unindent();
-        Debug.println("}");
+        if(!quiet) Debug.endBlock();
 
         // return empty message in case of error
-		return new Message(new byte[0]);
+        return new Message(data);
 	}
 
 	// close the connection by closing streams and the underlying socket	

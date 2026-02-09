@@ -13,6 +13,7 @@ public class MessagingServer {
 
 	public MessagingServer(int port) {
 		try {
+            System.out.println("Messaging server: starting, listening on port " + port);
 			this.welcomeSocket = new ServerSocket(port);
 		} catch (IOException ex) {
 			System.out.println("Messaging server: " + ex.getMessage());
@@ -34,6 +35,7 @@ public class MessagingServer {
 	public void stop() {
 		if (welcomeSocket != null) {
 			try {
+                System.out.println("Messaging server: closing, listened on port " + welcomeSocket.getLocalPort());
 				welcomeSocket.close();
 			} catch (IOException ex) {
 				System.out.println("Messaging server: " + ex.getMessage());

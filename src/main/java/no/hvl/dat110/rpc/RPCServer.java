@@ -10,6 +10,7 @@ import no.hvl.dat110.messaging.MessageUtils;
 import no.hvl.dat110.messaging.MessagingServer;
 import no.hvl.dat110.system.controller.Common;
 import utils.Debug;
+import utils.Logger;
 
 public class RPCServer {
 
@@ -26,6 +27,15 @@ public class RPCServer {
 		this.services = new HashMap<Byte,RPCRemoteImpl>();
 		
 	}
+
+    public void logMsg(String fmt, Object... args) {
+        if(Logger.DEBUG) {
+            if(fmt.lastIndexOf("\n") != fmt.length() - 1){
+                fmt += "\n";
+            }
+            Debug.printf(fmt, args);
+        }
+    }
 	
 	public void run() {
 		
@@ -54,16 +64,18 @@ public class RPCServer {
 		   // - encapsulate return value 
 		   // - send back the message containing the RPC reply
 
-            Debug.println("attempting to receive message");
+            logMsg("attempting to receive message");
 
             // wait until read
             requestmsg = connection.receive();
             byte[] requestData = requestmsg.getData();
 
-            Debug.println("received request, " + Arrays.toString(requestData));
+            logMsg("/server/received request, %s", Arrays.toString(requestData));
 
             rpcid = requestData[0];
             byte[] param = RPCUtils.decapsulate(requestData);
+
+            logMsg("/server/received rpcid request, id: %d, param: %s", rpcid, Arrays.toString(param));
 
             // handle & send response
             RPCRemoteImpl service = services.get(rpcid);

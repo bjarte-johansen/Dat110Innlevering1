@@ -37,7 +37,7 @@ class TestSystem {
 			public void run() {
 				
 				try {
-				SensorDevice.main(null);
+				    SensorDevice.main(null);
 				} catch (Exception e) {
 					e.printStackTrace();
 					failure.set(true);
@@ -52,7 +52,7 @@ class TestSystem {
 			public void run() {
 				
 				try {
-				Controller.main(null);
+				    Controller.main(null);
 				} catch (Exception e) {
 					e.printStackTrace();
 					failure.set(true);

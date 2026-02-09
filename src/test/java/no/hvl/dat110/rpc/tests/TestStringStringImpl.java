@@ -11,7 +11,7 @@ public class TestStringStringImpl extends RPCRemoteImpl {
 	}
 	
 	public byte[] invoke(byte[] request) {
-	
+
 		String str = RPCUtils.unmarshallString(request);
 		
 		String resstr = m(str);

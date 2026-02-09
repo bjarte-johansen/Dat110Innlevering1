@@ -6,8 +6,10 @@ import no.hvl.dat110.messaging.*;
 import java.util.Arrays;
 
 import utils.Debug;
+import utils.Logger;
 
 public class RPCClient {
+    public static final boolean RPCCLIENT_DEBUG = false;
 
 	// underlying messaging client used for RPC communication
 	private MessagingClient msgclient;
@@ -21,6 +23,7 @@ public class RPCClient {
 	
 	public void connect() {
         // connect by creating the underlying messaging connection
+        System.out.println("RPC client: connecting to server " + msgclient);
         connection = msgclient.connect();
 	}
 	
@@ -37,36 +40,40 @@ public class RPCClient {
 	 */
 
 	public byte[] call(byte rpcid, byte[] param) {
-        Debug.printf("# rpclient/call started");
-        Debug.indent(1);
+        if(RPCCLIENT_DEBUG && Logger.DEBUG) {
+            Debug.println("-".repeat(20));
+            Debug.beginBlock("# rpclient/call started");
+        }
 
         // encapsulate the rpcid and param in an RPC message
         byte[] rpcMessage = RPCUtils.encapsulate(rpcid, param);
 
-        Debug.println();
-        Debug.printf("%s (is \"%s\")\n", Arrays.toString(rpcMessage), RPCCommon.getIdAsString(rpcid));
+        if(RPCCLIENT_DEBUG && Logger.DEBUG) {
+            Debug.printf("Sent:{\n");
+            Debug.printf("\tRPCID: %d (%s)\n", rpcid, RPCCommon.getIdAsString(rpcid));
+            Debug.printf("\tPARAMS: %s\n", Arrays.toString(rpcMessage));
+            Debug.println("}");
+        }
 
+        // send the RPC message as a Message to the server
         connection.send(new Message(rpcMessage));
 
         // block & wait for a reply
-        Debug.println("- waiting for reply");
         Message reply = connection.receive();
-        Debug.println("- received reply");
 
-        // dont allow this ..
-        if(reply.getData().length == 0) {
-            throw new IllegalStateException("RPC CALL reply.getData().length was zero");
+        if(RPCCLIENT_DEBUG && Logger.DEBUG) {
+            Debug.println("Received:{");
+            Debug.printf("\tDATA: %s\n", Arrays.toString(reply.getData()));
+            Debug.println("}");
         }
 
-        Debug.indent();
-        Debug.printf("data: %s, len: %d\n", Arrays.toString(reply.getData()), reply.getData().length);
-        Debug.printf("decapsulated: " + Arrays.toString(RPCUtils.decapsulate(reply.getData())) + "\n");
-        Debug.unindent();
+        if(RPCCLIENT_DEBUG && Logger.DEBUG) {
+            Debug.endBlock();
+            Debug.println("-".repeat(20));
+        }
 
-        Debug.indent(-1);
-        Debug.printf("# rpcclient/call end");
-
-        return RPCUtils.decapsulate(reply.getData());
+        // return the data from the RPC reply message
+        return reply.getData();
 	}
 
 }

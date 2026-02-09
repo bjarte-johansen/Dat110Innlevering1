@@ -204,6 +204,9 @@ public class TestRPC {
 					String teststr = "string";
 					String resstr = stringstringstub.m(teststr);
 
+                    System.out.printf("clientthread input-string: \"%s\"\n", teststr);
+                    System.out.printf("clientthread output-string: \"%s\"\n", resstr);
+
 					assertEquals(teststr + teststr, resstr);
 
 					stopstub.stop();

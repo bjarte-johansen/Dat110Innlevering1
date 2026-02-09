@@ -9,15 +9,16 @@ public class SensorDevice {
 
 		System.out.println("Sensor server starting ...");
 		
-		RPCServer sensorserver = new RPCServer(Common.SENSORPORT);
-
-		SensorImpl sensor = new SensorImpl((byte)Common.READ_RPCID,sensorserver);
-		
-		sensorserver.run();
-		
-		sensorserver.stop();
+        run();
 		
 		System.out.println("Sensor server stopping ...");
-		
 	}
+
+    public static void run(){
+        RPCServer sensorServer = new RPCServer(Common.SENSORPORT);
+        SensorImpl sensor = new SensorImpl((byte)Common.READ_RPCID, sensorServer);
+        sensorServer.run();
+        sensorServer.stop();
+    }
+
 }

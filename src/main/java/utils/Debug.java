@@ -1,9 +1,12 @@
 package utils;
 
+import java.util.Stack;
+
 public final class Debug {
 
     private static int indent = 0;
     private static final String IND = "    "; // 4 spaces
+    private static Stack<String> trace = new Stack<>();
 
     private static String pad() {
         return IND.repeat(Math.max(0, indent));
@@ -44,4 +47,15 @@ public final class Debug {
     }
 
     private Debug() {}
+
+    public static void beginBlock(String title) {
+        trace.push(title);
+
+        Debug.printf("BEGIN %s\n", title);
+        Debug.indent();
+    }
+    public static void endBlock(){
+        Debug.unindent();
+        Debug.printf("END %s\n", trace.pop());
+    }
 }

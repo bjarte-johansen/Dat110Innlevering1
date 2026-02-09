@@ -1,11 +1,37 @@
 package no.hvl.dat110.rpc;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import no.hvl.dat110.TODO;
+import no.hvl.dat110.messaging.SegmentUtils;
+import utils.Logger;
 
 public class RPCUtils {
+    public static final boolean LOG_CALLS = false;
+
+    static public String rpcMessageToString(byte[] rpcmsg) {
+        if(rpcmsg == null || rpcmsg.length == 0) return "";
+
+        byte rpcid = rpcmsg[0];
+        byte[] payload = Arrays.copyOfRange(rpcmsg, 1, rpcmsg.length);
+
+        return String.format("{rpcid: %d, payload: %s}", rpcid, byteArrayToString(payload));
+    }
+    static public String byteArrayToString(byte[] payload) {
+        if(payload == null || payload.length == 0) return "";
+
+        return String.format("{bytes: %s}", Arrays.toString(payload));
+    }
+    static public String payloadToString(byte[] payload) {
+        if(payload == null || payload.length == 0) return "";
+
+        return String.format("{payload: %s}", byteArrayToString(payload));
+    }
+
+    ///////////////
+
     static String byteArrayToHexString(byte[] a) {
         if(a == null || a.length == 0) return "";
 
@@ -20,12 +46,26 @@ public class RPCUtils {
             throw new IllegalArgumentException("Payload cannot be null");
         }
 
-        System.out.println("\tRPCUtils.encapsulate: rpcid=" + rpcid + " payloadlength=" + payload.length + ", payload: " + Arrays.toString(payload));
+        // slower but very nice and neat
+        byte[] rpcmsg = ByteBuffer.allocate(1 + payload.length)
+            .put(rpcid)
+            .put(payload)
+            .array();
 
+/*
+		// faster but more errorprone
 		// Encapsulate the rpcid and payload in a byte array according to the RPC message syntax / format
-        byte[] rpcmsg =  new byte[1 + payload.length];
+        // set rpcid as the first byte of the rpc message
+        // copy the payload into the rpc message starting from index 1
+        byte[] rpcmsg =  new byte[payload.length + 1];
         rpcmsg[0] = rpcid;
         System.arraycopy(payload, 0, rpcmsg, 1, payload.length);
+ */
+
+        // debug
+        if(LOG_CALLS) Logger.logf("rpcutils/encapsulate/output, %s", rpcMessageToString(rpcmsg));
+
+        // return result
 		return rpcmsg;
 	}
 	
@@ -34,52 +74,48 @@ public class RPCUtils {
             throw new IllegalArgumentException("Invalid RPC message, rpcmsg was null or too short");
         }
 
-        byte rpcid;
-        byte[] payload;
+        if(LOG_CALLS) Logger.logf("rpcutils/decapsulate/input, %s\n", rpcMessageToString(rpcmsg) + ")");
 
-        rpcid = rpcmsg[0];
-        payload = Arrays.copyOfRange(rpcmsg, 1, rpcmsg.length);
+        // extract payload
+        byte[] payload = Arrays.copyOfRange(rpcmsg, 1, rpcmsg.length);
 
-        System.out.println(
-            "\tRPCUtils.decapsulate: rpcid=" + rpcid +
-                " payloadlength=" + payload.length +
-                " payload=" + Arrays.toString(payload)
-        );
+        // log
+        if(LOG_CALLS) Logger.logf("rpcutils/decapsulate/output, %s", payloadToString(payload));
 
-		// Decapsulate the rpcid and payload in a byte array according to the RPC message syntax
+        // return result
         return payload;
 	}
 
 	// convert String to byte array
 	public static byte[] marshallString(String str) {
-		return ByteBuffer
-            .allocate(str.length())
-            .put(StandardCharsets.UTF_8.encode(str))
-            .array();
+        return str.getBytes(StandardCharsets.UTF_8);
 	}
 
 	// convert byte array to a String
 	public static String unmarshallString(byte[] data) {
-		return StandardCharsets.UTF_8
-            .decode(ByteBuffer
-            .wrap(data))
-            .toString();
+        return new String(data, StandardCharsets.UTF_8);
 	}
-	
+
+
+    /*
+    void marshalling / unmarshalling
+     */
 	public static byte[] marshallVoid() {
 		return new byte[0];
 	}
 	
 	public static void unmarshallVoid(byte[] data) {
-        // debug: should we check for null data?
-
         if(data.length != 0) {
             throw new IllegalArgumentException("Data for unmarshalling void must be of length 0");
         }
-
-        // this doesnt even make sense lol
 	}
 
+
+
+
+    /*
+    boolean marshalling / unmarshalling
+     */
 	// convert boolean to a byte array representation
 	public static byte[] marshallBoolean(boolean b) {
 		return (b) ? new byte[] {1} : new byte[] {0};
@@ -94,10 +130,16 @@ public class RPCUtils {
 		
 	}
 
+
+    /*
+    integer marshalling / unmarshalling
+     */
+
 	// integer to byte array representation
 	public static byte[] marshallInteger(int x) {
 		return ByteBuffer
             .allocate(4)
+            .order(ByteOrder.BIG_ENDIAN)
             .putInt(x)
             .array();
 	}
@@ -106,6 +148,7 @@ public class RPCUtils {
 	public static int unmarshallInteger(byte[] data) {
 		return ByteBuffer
             .wrap(data)
+            .order(ByteOrder.BIG_ENDIAN)
             .getInt();
 
 	}

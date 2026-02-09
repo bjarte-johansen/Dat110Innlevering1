@@ -34,14 +34,11 @@ public class MessageUtils {
         int len = data.length;
         byte[] segment;
 
-        Debug.printf("MessageUtils/encapsulate");
-        Debug.indent();
-        Debug.printf("data length=%d, data=%s", len, Arrays.toString(data));
+        Debug.beginBlock("MessageUtils/encapsulate");
+        Debug.printf("input: %s\n", SegmentUtils.payloadToString(message.getData()));
 
         if(data.length > 0) {
             segment = new byte[MessageUtils.SEGMENTSIZE];
-
-            // TODO - START
 
             // encode length of data and copy data into segment
             segment[0] = (byte) len;
@@ -50,13 +47,15 @@ public class MessageUtils {
             segment = new byte[0];
         }
 
-        Debug.unindent();
+        Debug.printf("output: %s\n", SegmentUtils.segmentToString(message.getData()));
+
+        Debug.endBlock();
 
         return segment;
 	}
 
 	public static Message decapsulate(byte[] segment) {
-        Debug.printf("MessageUtils/decapsulate");
+        Debug.printf("MessageUtils/decapsulate\n");
         Debug.indent();
         Debug.printf("segment length=%d, segment=%s\n", segment.length, Arrays.toString(segment));
         Debug.unindent();

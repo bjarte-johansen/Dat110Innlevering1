@@ -16,7 +16,7 @@ public class TestVoidVoidStub extends RPCLocalStub {
 		
 		byte[] reply = rpcclient.call((byte) 1, request);
 		
-		//RPCUtils.unmarshallVoid(reply);
+		RPCUtils.unmarshallVoid(reply);
 		
 	}
 }
